@@ -56,6 +56,9 @@ class Glyph():
         """
         return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
 
+    def __hash__(self):
+        return hash("\n".join([i.line for i in self.instructions]))
+
 def total_penup_travel(gs):
     """
     Compute total distance traveled in a given ordering
@@ -106,6 +109,15 @@ def reorder_greedy(gs, index=0):
 
     return ordered
 
+def dedupe(gs):
+    "Use Glyph.__hash__() to dedupe the list of glyphs"
+    seen = set()
+    for g in gs:
+        h = hash(g)
+        if h not in seen:
+            yield g
+            seen.add(h)
+
 ######################
 
 instructions = []
@@ -132,6 +144,11 @@ print "Total Glyphs: %d" % len(glyphs)
 # No sorting
 print "Initial penup distance: %d" % total_penup_travel(glyphs)
 print "Initial total distance: %d" % total_travel(glyphs)
+
+# dedupe alone
+glyphs = list(dedupe(glyphs))
+print "Deduped penup distance: %d" % total_penup_travel(glyphs)
+print "Deduped total distance: %d" % total_travel(glyphs)
 
 # easy sort: sort all glyphs by starting point
 #
