@@ -5,6 +5,7 @@ class Instruction():
     types = {
         'C13': 'pendown',
         'C14': 'penup',
+        'C17': 'move',
     }
 
     def __init__(self, line):
@@ -14,6 +15,9 @@ class Instruction():
         self.typename = self._typename()
 
         self.coords = self._coords()
+
+    def distance_to(self, other):
+        return max(abs(other.coords[0] - self.coords[0]), abs(other.coords[1] - self.coords[1]))
 
     def _typename(self):
         return self.types.get(self.typecode, 'other')
@@ -44,12 +48,13 @@ class Glyph():
         """ 
         Compute distance between two glyphs (other.start - self.end)
 
-        I am not sure this is a totally valid distance metric for the
-        polargraph, but it's a good start. We want a metric which is directly
-        related to the time it would take the device to move between the two
-        locations.
+        This is not strictly 'distance', but something which is proportional to
+        the time it takes the polargraph to move between positions.  The device
+        seems to move each servo independently at the same speed, so the time
+        to move betwen points is proportional to the greatest distance each
+        servo has to move.
         """
-        return abs(other.start[0] - self.end[0]) + abs(other.start[1] - self.end[1])
+        return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
 
 def total_penup_travel(gs):
     """
@@ -63,6 +68,21 @@ def total_penup_travel(gs):
             prev = g
 
     return sum(distance_between_each_pair(gs))
+
+def total_travel(gs):
+    def iter_moves(gs):
+        for g in gs:
+            for i in g.instructions:
+                if i.typename == 'move':
+                    yield i
+
+    def distance_between_moves(moves):
+        moves = iter(moves)
+        prev = next(moves)
+        for m in moves:
+            yield m.distance_to(prev)
+
+    return sum(distance_between_moves(iter_moves(gs)))
 
 def reorder_greedy(gs, index=0):
     """
@@ -110,6 +130,7 @@ print "Total Glyphs: %d" % len(glyphs)
 
 # No sorting
 print "Initial penup distance: %d" % total_penup_travel(glyphs)
+print "Initial total distance: %d" % total_travel(glyphs)
 
 # easy sort: sort all glyphs by starting point
 #
@@ -117,12 +138,14 @@ print "Initial penup distance: %d" % total_penup_travel(glyphs)
 from operator import attrgetter
 sorted_g = sorted(glyphs, key=attrgetter('start'))
 print "Sorted penup distance:  %d" % total_penup_travel(sorted_g)
+print "Sorted total distance: %d" % total_travel(sorted_g)
 
 # Try a few starting points with the greedy sort, just to make sure we don't
 # happen to start somewhere crazy.
 for i in range(0, len(glyphs), len(glyphs) / 15):
     greedy = reorder_greedy(glyphs, index=i)
     print "Greedy penup (i=%d) %d" % (i, total_penup_travel(greedy))
+    print "Greedy total (i=%d) %d" % (i, total_travel(greedy))
 
 # Next up: try flipping the ordering of individual glyphs in greedy sort
 #
