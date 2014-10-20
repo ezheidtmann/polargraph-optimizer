@@ -81,6 +81,7 @@ def total_travel(gs):
         prev = next(moves)
         for m in moves:
             yield m.distance_to(prev)
+            prev = m
 
     return sum(distance_between_moves(iter_moves(gs)))
 
