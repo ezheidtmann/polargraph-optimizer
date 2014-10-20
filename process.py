@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+import sys
 
 class Instruction():
     types = {
@@ -38,9 +40,9 @@ class Glyph():
             self.end = None
 
         if self.start == None or self.end == None:
-            print "Problem with instruction set"
+            print("Problem with instruction set", file=sys.stderr)
             for i in instructions:
-                print "%s (%s)" % (i.line, i.typename)
+                print("%s (%s)" % (i.line, i.typename), file=sys.stderr)
 
         self.instructions = instructions
 
@@ -118,6 +120,13 @@ def dedupe(gs):
             yield g
             seen.add(h)
 
+def print_glyphs(gs):
+    # be sure to start with a penup
+    print("C14,END")
+    for g in gs:
+        for i in g.instructions:
+            print(i.line)
+
 ######################
 
 instructions = []
@@ -135,35 +144,34 @@ for inst in instructions:
             glyphs.append(Glyph(chunk))
         chunk = []
 
-#for glyph in glyphs:
-#    print "GLYPH start: %s" % glyph.start
-#    print "GLYPH end:   %s" % glyph.end
-
-print "Total Glyphs: %d" % len(glyphs)
+print("Total Glyphs: %d" % len(glyphs), file=sys.stderr)
 
 # No sorting
-print "Initial penup distance: %d" % total_penup_travel(glyphs)
-print "Initial total distance: %d" % total_travel(glyphs)
+print("Initial penup distance: %d" % total_penup_travel(glyphs), file=sys.stderr)
+print("Initial total distance: %d" % total_travel(glyphs), file=sys.stderr)
 
-# dedupe alone
+# dedupe alone (and used below)
 glyphs = list(dedupe(glyphs))
-print "Deduped penup distance: %d" % total_penup_travel(glyphs)
-print "Deduped total distance: %d" % total_travel(glyphs)
+print("Deduped penup distance: %d" % total_penup_travel(glyphs), file=sys.stderr)
+print("Deduped total distance: %d" % total_travel(glyphs), file=sys.stderr)
 
 # easy sort: sort all glyphs by starting point
 #
 # This is O(n log n) because it's simply a sort.
 from operator import attrgetter
 sorted_g = sorted(glyphs, key=attrgetter('start'))
-print "Sorted penup distance:  %d" % total_penup_travel(sorted_g)
-print "Sorted total distance: %d" % total_travel(sorted_g)
+print("Sorted penup distance:  %d" % total_penup_travel(sorted_g), file=sys.stderr)
+print("Sorted total distance: %d" % total_travel(sorted_g), file=sys.stderr)
 
 # Try a few starting points with the greedy sort, just to make sure we don't
 # happen to start somewhere crazy.
 for i in range(0, len(glyphs), len(glyphs) / 15):
     greedy = reorder_greedy(glyphs, index=i)
-    print "Greedy penup (i=%d) %d" % (i, total_penup_travel(greedy))
-    print "Greedy total (i=%d) %d" % (i, total_travel(greedy))
+    print("Greedy penup (i=%d) %d" % (i, total_penup_travel(greedy)), file=sys.stderr)
+    print("Greedy total (i=%d) %d" % (i, total_travel(greedy)), file=sys.stderr)
+    print_glyphs(glyphs)
+    import sys
+    sys.exit()
 
 # Next up: try flipping the ordering of individual glyphs in greedy sort
 #
