@@ -169,7 +169,7 @@ for i in range(0, len(glyphs), len(glyphs) / 15):
     greedy = reorder_greedy(glyphs, index=i)
     print("Greedy penup (i=%d) %d" % (i, total_penup_travel(greedy)), file=sys.stderr)
     print("Greedy total (i=%d) %d" % (i, total_travel(greedy)), file=sys.stderr)
-    print_glyphs(glyphs)
+    print_glyphs(greedy)
     import sys
     sys.exit()
 
