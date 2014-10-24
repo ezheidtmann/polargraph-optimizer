@@ -32,6 +32,7 @@ class Instruction():
 
 class Glyph():
     def __init__(self, instructions):
+        self._reversed = False
         try:
             self.start = instructions[0].coords
             self.end = instructions[-2].coords
@@ -47,7 +48,7 @@ class Glyph():
         self.instructions = instructions
 
     def distance_to(self, other):
-        """ 
+        """
         Compute distance between two glyphs (other.start - self.end)
 
         This is not strictly 'distance', but something which is proportional to
@@ -57,6 +58,29 @@ class Glyph():
         servo has to move.
         """
         return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
+
+    def distance_to_if_self_reversed(self, other):
+        return max(abs(other.start[0] - self.start[0]), abs(other.start[1] - self.start[1]))
+
+    def distance_to_if_other_reversed(self, other):
+        return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
+
+    def ordered_instructions(self):
+        if self._reversed:
+            return reversed(self.instructions)
+        else:
+            return iter(self.instructions)
+
+    def reversed_copy(self):
+        if not hasattr(self, '_reversed_copy'):
+            from copy import copy
+            new = copy(self)
+            new.start = self.end
+            new.end = self.start
+            new._reversed = True
+            new._reversed_copy = self
+            self._reversed_copy = new
+        return self._reversed_copy
 
     def __hash__(self):
         return hash("\n".join([i.line for i in self.instructions]))
@@ -77,7 +101,7 @@ def total_penup_travel(gs):
 def total_travel(gs):
     def iter_moves(gs):
         for g in gs:
-            for i in g.instructions:
+            for i in g.ordered_instructions():
                 if i.typename == 'move':
                     yield i
 
@@ -85,7 +109,7 @@ def total_travel(gs):
         moves = iter(moves)
         prev = next(moves)
         for m in moves:
-            yield m.distance_to(prev)
+            yield prev.distance_to(m)
             prev = m
 
     return sum(distance_between_moves(iter_moves(gs)))
@@ -94,7 +118,7 @@ def reorder_greedy(gs, index=0):
     """
     Greedy sorting: pick a starting glyph, then find the glyph which starts
     nearest to the previous ending point.
-    
+
     This is O(n^2). Pretty sure it can't be optimized into a sort.
     """
     gs = list(gs)
@@ -102,12 +126,21 @@ def reorder_greedy(gs, index=0):
     prev = ordered[0]
     while len(gs) > 0:
         from operator import methodcaller
-        nearest = min(gs, key=methodcaller('distance_to', prev))
+        def dist_with_reverse_flag(g):
+             return min(
+                (prev.distance_to(g), 0, False, g),
+                (prev.distance_to_if_other_reversed(g), 1, True, g)
+            )
+
+        (dist, tiebreaker, reverse, nearest) = min(map(dist_with_reverse_flag, gs))
         gs.remove(nearest)
-        ordered.append(nearest)
-        prev = nearest
-        #if len(gs) % 200 == 0:
-        #    print "len: %d" % len(gs)
+
+        if reverse:
+            prev = nearest.reversed_copy()
+        else:
+            prev = nearest
+
+        ordered.append(prev)
 
     return ordered
 
@@ -124,7 +157,7 @@ def print_glyphs(gs):
     # be sure to start with a penup
     print("C14,END")
     for g in gs:
-        for i in g.instructions:
+        for i in g.ordered_instructions():
             print(i.line)
 
 ######################
@@ -147,28 +180,28 @@ for inst in instructions:
 print("Total Glyphs: %d" % len(glyphs), file=sys.stderr)
 
 # No sorting
-print("Initial penup distance: %d" % total_penup_travel(glyphs), file=sys.stderr)
-print("Initial total distance: %d" % total_travel(glyphs), file=sys.stderr)
+print("Initial penup distance: %9d" % total_penup_travel(glyphs), file=sys.stderr)
+print("Initial total distance: %9d" % total_travel(glyphs), file=sys.stderr)
 
 # dedupe alone (and used below)
 glyphs = list(dedupe(glyphs))
-print("Deduped penup distance: %d" % total_penup_travel(glyphs), file=sys.stderr)
-print("Deduped total distance: %d" % total_travel(glyphs), file=sys.stderr)
+print("Deduped penup distance: %9d" % total_penup_travel(glyphs), file=sys.stderr)
+print("Deduped total distance: %9d" % total_travel(glyphs), file=sys.stderr)
 
 # easy sort: sort all glyphs by starting point
 #
 # This is O(n log n) because it's simply a sort.
 from operator import attrgetter
 sorted_g = sorted(glyphs, key=attrgetter('start'))
-print("Sorted penup distance:  %d" % total_penup_travel(sorted_g), file=sys.stderr)
-print("Sorted total distance: %d" % total_travel(sorted_g), file=sys.stderr)
+print("Sorted penup distance:  %9d" % total_penup_travel(sorted_g), file=sys.stderr)
+print("Sorted total distance:  %9d" % total_travel(sorted_g), file=sys.stderr)
 
 # Try a few starting points with the greedy sort, just to make sure we don't
 # happen to start somewhere crazy.
 for i in range(0, len(glyphs), len(glyphs) / 15):
     greedy = reorder_greedy(glyphs, index=i)
-    print("Greedy penup (i=%d) %d" % (i, total_penup_travel(greedy)), file=sys.stderr)
-    print("Greedy total (i=%d) %d" % (i, total_travel(greedy)), file=sys.stderr)
+    print("Greedy penup (i=%d)      %9d" % (i, total_penup_travel(greedy)), file=sys.stderr)
+    print("Greedy total (i=%d)      %9d" % (i, total_travel(greedy)), file=sys.stderr)
     print_glyphs(greedy)
     import sys
     sys.exit()
