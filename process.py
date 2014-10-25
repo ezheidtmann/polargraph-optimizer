@@ -63,10 +63,21 @@ class Glyph():
         return max(abs(other.start[0] - self.start[0]), abs(other.start[1] - self.start[1]))
 
     def distance_to_if_other_reversed(self, other):
-        return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
+        #dist_else = self.distance_to(other)
+        dist_if = max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
+        return dist_if
+        if dist_else == dist_if:
+            print("normal: %9d reversed: %9d" % (dist_else, dist_if), file=sys.stderr)
+            print("self", file=sys.stderr)
+            print("  %5d, %5d start" % self.start,  file=sys.stderr)
+            print("  %5d, %5d end"   % self.end,    file=sys.stderr)
+            print("other", file=sys.stderr)
+            print("  %5d, %5d start" % other.start, file=sys.stderr)
+            print("  %5d, %5d end"   % other.end,   file=sys.stderr)
 
     def ordered_instructions(self):
         if self._reversed:
+            print("REVERSED", file=sys.stderr)
             return reversed(self.instructions)
         else:
             return iter(self.instructions)
@@ -127,10 +138,10 @@ def reorder_greedy(gs, index=0):
     while len(gs) > 0:
         from operator import methodcaller
         def dist_with_reverse_flag(g):
-             return min(
+            return min([
                 (prev.distance_to(g), 0, False, g),
                 (prev.distance_to_if_other_reversed(g), 1, True, g)
-            )
+            ])
 
         (dist, tiebreaker, reverse, nearest) = min(map(dist_with_reverse_flag, gs))
         gs.remove(nearest)
