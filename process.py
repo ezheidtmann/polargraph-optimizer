@@ -85,7 +85,7 @@ def total_travel(gs):
         moves = iter(moves)
         prev = next(moves)
         for m in moves:
-            yield m.distance_to(prev)
+            yield prev.distance_to(m)
             prev = m
 
     return sum(distance_between_moves(iter_moves(gs)))
@@ -102,7 +102,7 @@ def reorder_greedy(gs, index=0):
     prev = ordered[0]
     while len(gs) > 0:
         from operator import methodcaller
-        nearest = min(gs, key=methodcaller('distance_to', prev))
+        nearest = min(gs, key=prev.distance_to)
         gs.remove(nearest)
         ordered.append(nearest)
         prev = nearest
