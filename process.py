@@ -77,7 +77,7 @@ class Glyph():
 
     def ordered_instructions(self):
         if self._reversed:
-            print("REVERSED", file=sys.stderr)
+            #print("REVERSED", file=sys.stderr)
             return reversed(self.instructions)
         else:
             return iter(self.instructions)
