@@ -75,10 +75,51 @@ class Glyph():
             print("  %5d, %5d start" % other.start, file=sys.stderr)
             print("  %5d, %5d end"   % other.end,   file=sys.stderr)
 
+    def _reversed_instructions(self):
+        """
+        A generator of the reversed instructions.
+
+        Typical instructions look like this (normal ordering):
+
+        C17,2638,6563,2,END <-- startpoint (assumed pen is up)
+        C13,END             <-- pendown
+        C17,2679,6558,2,END <-- drawing moves ...
+        C17,2677,6569,2,END
+        C17,2663,6573,2,END <-- last move
+        C14,END             <-- penup
+
+        So a reversed ordering would print in this order:
+
+        last move
+        pendown
+        other moves in reversed order
+        startpoint
+        penup
+
+        """
+        original_order = iter(self.instructions)
+        reverse_order = reversed(self.instructions)
+
+        startpoint = next(original_order)
+        pendown = next(original_order)
+
+        penup = next(reverse_order) 
+        endpoint = next(reverse_order)
+
+        yield endpoint
+        yield pendown
+
+        for i in reverse_order:
+            if not i.typename == 'move':
+                break
+            yield i
+
+        yield startpoint
+        yield penup
+
     def ordered_instructions(self):
         if self._reversed:
-            #print("REVERSED", file=sys.stderr)
-            return reversed(self.instructions)
+            return self._reversed_instructions()
         else:
             return iter(self.instructions)
 
