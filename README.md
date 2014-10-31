@@ -44,4 +44,5 @@ Contributors
 ----
 
 [Evan Heidtmann](https://github.com/ezheidtmann)
+
 [Olivier Bouwman](https://github.com/olivierbouwman)
