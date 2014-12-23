@@ -39,7 +39,7 @@ class Glyph():
             self.end = None
 
         if self.start == None or self.end == None:
-            print("Problem with instruction set", file=sys.stderr)
+            print("Problem with instructions in glyph:", file=sys.stderr)
             for i in instructions:
                 print("%s (%s)" % (i.line, i.typename), file=sys.stderr)
 
@@ -171,18 +171,18 @@ def reorder_greedy(gs, index=0):
 
     This is O(n^2). Pretty sure it can't be optimized into a sort.
     """
+    from operator import itemgetter
     gs = list(gs)
     ordered = [gs.pop(index)]
     prev = ordered[0]
     while len(gs) > 0:
-        from operator import methodcaller
         def dist_with_reverse_flag(g):
-            return min([
-                (prev.distance_to(g), 0, False, g),
-                (prev.distance_to_if_other_reversed(g), 1, True, g)
-            ])
+            return min([(prev.distance_to(g), 0, False, g),
+                        (prev.distance_to_if_other_reversed(g), 1, True, g)],
+                       key=itemgetter(0))
 
-        (dist, tiebreaker, reverse, nearest) = min(map(dist_with_reverse_flag, gs))
+        (dist, tiebreaker, reverse, nearest) = min(map(dist_with_reverse_flag, gs),
+                                                   key=itemgetter(0))
         gs.remove(nearest)
 
         if reverse:

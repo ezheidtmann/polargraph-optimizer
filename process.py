@@ -34,14 +34,14 @@ print("Deduped total distance: %9d" % total_travel(glyphs), file=sys.stderr)
 # easy sort: sort all glyphs by starting point
 #
 # This is O(n log n) because it's simply a sort.
-from operator import attrgetter
-sorted_g = sorted(glyphs, key=attrgetter('start'))
+sorted_g = sorted(glyphs,
+                  key=lambda st: st.start or tuple())  # add default key in case 'start' is missing.
 print("Sorted penup distance:  %9d" % total_penup_travel(sorted_g), file=sys.stderr)
 print("Sorted total distance:  %9d" % total_travel(sorted_g), file=sys.stderr)
 
 # Try a few starting points with the greedy sort, just to make sure we don't
 # happen to start somewhere crazy.
-for i in range(0, len(glyphs), len(glyphs) / 15):
+for i in range(0, len(glyphs), int(len(glyphs) / 15)):
     greedy = reorder_greedy(glyphs, index=i)
     print("Greedy penup (i=%d)      %9d" % (i, total_penup_travel(greedy)), file=sys.stderr)
     print("Greedy total (i=%d)      %9d" % (i, total_travel(greedy)), file=sys.stderr)
