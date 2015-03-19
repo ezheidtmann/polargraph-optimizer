@@ -1,5 +1,4 @@
 from __future__ import print_function
-from functools import total_ordering
 import sys
 
 class Instruction():
@@ -165,27 +164,6 @@ def total_travel(gs):
 
     return sum(distance_between_moves(iter_moves(gs)))
 
-@total_ordering
-class GlyphPairDistance():
-    def __init__(self, g_from, g_to, reverse=False):
-        self.g_from = g_from
-        self.g_to = g_to
-        self.reverse = reverse
-
-        if self.reverse:
-            self.dist = self.g_from.distance_to_if_other_reversed(self.g_to)
-        else:
-            self.dist = self.g_from.distance_to(self.g_to)
-
-    def __lt__(self, other):
-        if self.dist == other.dist:
-            return self.reverse < other.reverse
-        return self.dist < other.dist
-
-    def __eq__(self, other):
-        return self.dist == other.dist and self.reverse == other.reverse
-
-
 def reorder_greedy(gs, index=0):
     """
     Greedy sorting: pick a starting glyph, then find the glyph which starts
@@ -193,19 +171,21 @@ def reorder_greedy(gs, index=0):
 
     This is O(n^2). Pretty sure it can't be optimized into a sort.
     """
+    from operator import itemgetter
     gs = list(gs)
     ordered = [gs.pop(index)]
     prev = ordered[0]
     while len(gs) > 0:
         def dist_with_reverse_flag(g):
-            return min([GlyphPairDistance(prev, g, reverse=False),
-                        GlyphPairDistance(prev, g, reverse=True)])
+            return min([(prev.distance_to(g), 0, False, g),
+                        (prev.distance_to_if_other_reversed(g), 1, True, g)],
+                       key=itemgetter(0, 1, 2))
 
-        nearest_dist = min(map(dist_with_reverse_flag, gs))
-        nearest = nearest_dist.g_to
+        (dist, tiebreaker, reverse, nearest) = min(map(dist_with_reverse_flag, gs),
+                                                   key=itemgetter(0, 1, 2))
         gs.remove(nearest)
 
-        if nearest_dist.reverse:
+        if reverse:
             prev = nearest.reversed_copy()
         else:
             prev = nearest
