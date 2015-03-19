@@ -177,12 +177,12 @@ def reorder_greedy(gs, index=0):
     prev = ordered[0]
     while len(gs) > 0:
         def dist_with_reverse_flag(g):
-            return min([(prev.distance_to(g), 0, False, g),
-                        (prev.distance_to_if_other_reversed(g), 1, True, g)],
-                       key=itemgetter(0, 1, 2))
+            return min([(prev.distance_to(g), False, g),
+                        (prev.distance_to_if_other_reversed(g), True, g)],
+                       key=itemgetter(0, 1))
 
-        (dist, tiebreaker, reverse, nearest) = min(map(dist_with_reverse_flag, gs),
-                                                   key=itemgetter(0, 1, 2))
+        (dist, reverse, nearest) = min(map(dist_with_reverse_flag, gs),
+                                                   key=itemgetter(0, 1))
         gs.remove(nearest)
 
         if reverse:
