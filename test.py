@@ -1,9 +1,14 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 from lib import *
 import unittest
 
-from itertools import tee, izip
+from itertools import tee
+try:
+    from itertools import izip
+except ImportError:
+    izip = zip
 
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -128,10 +133,9 @@ class TestLib(unittest.TestCase):
 
         ordered = reorder_greedy(inputs)
 
+        print('inputs : {}'.format([g1.distance_to(g2) for (g1, g2) in pairwise(inputs)]))
+        print('ordered: {}'.format([g1.distance_to(g2) for (g1, g2) in pairwise(ordered)]))
 
-        print 'Inputs: {}'.format(map(lambda (g1, g2): g1.distance_to(g2), pairwise(inputs)))
-
-        print 'ordered: {}'.format(map(lambda (g1, g2): g1.distance_to(g2), pairwise(ordered)))
         self.assertEqual(ordered[0], inputs[0])
         self.assertLessEqual(ordered[0].distance_to(ordered[1]), inputs[0].distance_to(ordered[2]))
 
