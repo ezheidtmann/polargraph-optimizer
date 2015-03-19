@@ -76,57 +76,123 @@ class TestLib(unittest.TestCase):
         """
         Exercise reorder_greedy() with arbitrary input (not chosen for any specific reason)
         """
-        inputs = [self.glyph, 
+        inputs = [#self.glyph,
+            #self.makeGlyphFromText("""
+            #    C17,2638,6563,2,END
+            #    C13,END
+            #    C17,2679,6558,2,END
+            #    C17,2677,6569,2,END
+            #    C17,2663,6573,2,END
+            #    C14,END
+            #    """),
+            #self.makeGlyphFromText("""
+            #    C17,2675,6524,2,END
+            #    C13,END
+            #    C17,2686,6491,2,END
+            #    C17,2698,6485,2,END
+            #    C17,2706,6495,2,END
+            #    C17,2697,6502,2,END
+            #    C17,2690,6509,2,END
+            #    C17,2688,6510,2,END
+            #    C17,2675,6524,2,END
+            #    C14,END
+            #    """),
+            #self.makeGlyphFromText("""
+            #    C17,2644,6558,2,END
+            #    C13,END
+            #    C17,2647,6544,2,END
+            #    C17,2665,6542,2,END
+            #    C17,2661,6556,2,END
+            #    C17,2660,6557,2,END
+            #    C17,2644,6558,2,END
+            #    C14,END
+            #    """),
+            #self.makeGlyphFromText("""
+            #    C17,2638,6563,2,END
+            #    C13,END
+            #    C17,2679,6558,2,END
+            #    C17,2677,6569,2,END
+            #    C17,2663,6573,2,END
+            #    C14,END
+            #    C17,2726,6599,2,END
+            #    C13,END
+            #    """),
+            #self.makeGlyphFromText("""
+            #    C17,2675,6524,2,END
+            #    C13,END
+            #    C17,2686,6491,2,END
+            #    C17,2698,6485,2,END
+            #    C17,2706,6495,2,END
+            #    C17,2697,6502,2,END
+            #    C17,2690,6509,2,END
+            #    C17,2688,6510,2,END
+            #    C17,2675,6524,2,END
+            #    C14,END
+            #    """),
             self.makeGlyphFromText("""
-                C17,2638,6563,2,END
+                C17,5897,3692,2,END
                 C13,END
-                C17,2679,6558,2,END
-                C17,2677,6569,2,END
-                C17,2663,6573,2,END
+                C17,5899,3690,2,END
+                C17,5900,3688,2,END
+                C17,5894,3695,2,END
+                C17,5897,3692,2,END
                 C14,END
                 """),
             self.makeGlyphFromText("""
-                C17,2675,6524,2,END
+                C17,5827,3665,2,END
                 C13,END
-                C17,2686,6491,2,END
-                C17,2698,6485,2,END
-                C17,2706,6495,2,END
-                C17,2697,6502,2,END
-                C17,2690,6509,2,END
-                C17,2688,6510,2,END
-                C17,2675,6524,2,END
+                C17,5828,3663,2,END
+                C17,5829,3661,2,END
+                C17,5832,3657,2,END
+                C17,5835,3655,2,END
+                C17,5828,3666,2,END
+                C17,5827,3666,2,END
+                C17,5827,3665,2,END
                 C14,END
                 """),
             self.makeGlyphFromText("""
-                C17,2644,6558,2,END
+                C17,5820,3651,2,END
                 C13,END
-                C17,2647,6544,2,END
-                C17,2665,6542,2,END
-                C17,2661,6556,2,END
-                C17,2660,6557,2,END
-                C17,2644,6558,2,END
+                C17,5821,3649,2,END
+                C17,5822,3647,2,END
+                C17,5822,3645,2,END
+                C17,5816,3656,2,END
+                C17,5820,3651,2,END
                 C14,END
                 """),
             self.makeGlyphFromText("""
-                C17,2638,6563,2,END
+                C17,5825,3624,2,END
                 C13,END
-                C17,2679,6558,2,END
-                C17,2677,6569,2,END
-                C17,2663,6573,2,END
+                C17,5824,3623,2,END
+                C17,5823,3624,2,END
+                C17,5822,3625,2,END
+                C17,5821,3626,2,END
+                C17,5825,3624,2,END
                 C14,END
-                C17,2726,6599,2,END
-                C13,END
                 """),
             self.makeGlyphFromText("""
-                C17,2675,6524,2,END
+                C17,5841,3622,2,END
                 C13,END
-                C17,2686,6491,2,END
-                C17,2698,6485,2,END
-                C17,2706,6495,2,END
-                C17,2697,6502,2,END
-                C17,2690,6509,2,END
-                C17,2688,6510,2,END
-                C17,2675,6524,2,END
+                C17,5841,3621,2,END
+                C17,5841,3620,2,END
+                C17,5838,3619,2,END
+                C17,5833,3618,2,END
+                C17,5837,3625,2,END
+                C17,5838,3625,2,END
+                C17,5839,3625,2,END
+                C17,5841,3623,2,END
+                C17,5841,3622,2,END
+                C14,END
+                """),
+            self.makeGlyphFromText("""
+                C17,5793,3601,2,END
+                C13,END
+                C17,5789,3594,2,END
+                C17,5782,3576,2,END
+                C17,5780,3568,2,END
+                C17,5797,3609,2,END
+                C17,5794,3605,2,END
+                C17,5793,3601,2,END
                 C14,END
                 """),
             ]
