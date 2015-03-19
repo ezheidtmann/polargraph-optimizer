@@ -17,12 +17,12 @@ Deduped penup distance:   3494625
 Deduped total distance:   4040278
 Sorted penup distance:    5319295
 Sorted total distance:    5864948
-Greedy penup (i=0)         119543
-Greedy total (i=0)         665196
+Greedy penup (i=0)         124384
+Greedy total (i=0)         670037
 
-real  1m14.309s
-user  1m14.214s
-sys 0m0.072s
+real  1m0.164s
+user  1m0.088s
+sys 0m0.024s
 ```
 
 Now `map_optimized.txt` includes a reordered drawing plan with duplicate glyphs removed and with an improved ordering.
