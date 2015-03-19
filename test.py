@@ -3,7 +3,24 @@
 from lib import *
 import unittest
 
+from itertools import tee, izip
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return izip(a, b)
+
 class TestLib(unittest.TestCase):
+    def makeGlyphFromText(self, lines):
+        instructions = []
+        for line in lines.split("\n"):
+            line = line.strip()
+            if len(line):
+                instructions.append(Instruction(line))
+
+        return Glyph(instructions)
+
     def setUp(self):
         lines = """
         C17,2541,6525,2,END
@@ -23,14 +40,9 @@ class TestLib(unittest.TestCase):
         C17,2573,6538,2,END
         C14,END
         """
-        self.instructions = []
-        for line in lines.split("\n"):
-            line = line.strip()
-            if len(line):
-                self.instructions.append(Instruction(line))
 
-        self.glyph = Glyph(self.instructions)
-   
+        self.glyph = self.makeGlyphFromText(lines)
+
     def test_reversing(self):
         text = "\n".join([i.line for i in self.glyph._reversed_instructions()])
         expected_text = """
@@ -54,6 +66,74 @@ class TestLib(unittest.TestCase):
         expected_text = "\n".join([l.strip() for l in expected_text.strip().split("\n")])
 
         self.assertEqual(expected_text, text)
+
+    def test_greedy_sorting(self):
+        """
+        Exercise reorder_greedy() with arbitrary input (not chosen for any specific reason)
+        """
+        inputs = [self.glyph, 
+            self.makeGlyphFromText("""
+                C17,2638,6563,2,END
+                C13,END
+                C17,2679,6558,2,END
+                C17,2677,6569,2,END
+                C17,2663,6573,2,END
+                C14,END
+                """),
+            self.makeGlyphFromText("""
+                C17,2675,6524,2,END
+                C13,END
+                C17,2686,6491,2,END
+                C17,2698,6485,2,END
+                C17,2706,6495,2,END
+                C17,2697,6502,2,END
+                C17,2690,6509,2,END
+                C17,2688,6510,2,END
+                C17,2675,6524,2,END
+                C14,END
+                """),
+            self.makeGlyphFromText("""
+                C17,2644,6558,2,END
+                C13,END
+                C17,2647,6544,2,END
+                C17,2665,6542,2,END
+                C17,2661,6556,2,END
+                C17,2660,6557,2,END
+                C17,2644,6558,2,END
+                C14,END
+                """),
+            self.makeGlyphFromText("""
+                C17,2638,6563,2,END
+                C13,END
+                C17,2679,6558,2,END
+                C17,2677,6569,2,END
+                C17,2663,6573,2,END
+                C14,END
+                C17,2726,6599,2,END
+                C13,END
+                """),
+            self.makeGlyphFromText("""
+                C17,2675,6524,2,END
+                C13,END
+                C17,2686,6491,2,END
+                C17,2698,6485,2,END
+                C17,2706,6495,2,END
+                C17,2697,6502,2,END
+                C17,2690,6509,2,END
+                C17,2688,6510,2,END
+                C17,2675,6524,2,END
+                C14,END
+                """),
+            ]
+
+        ordered = reorder_greedy(inputs)
+
+
+        print 'Inputs: {}'.format(map(lambda (g1, g2): g1.distance_to(g2), pairwise(inputs)))
+
+        print 'ordered: {}'.format(map(lambda (g1, g2): g1.distance_to(g2), pairwise(ordered)))
+        self.assertEqual(ordered[0], inputs[0])
+        self.assertLessEqual(ordered[0].distance_to(ordered[1]), inputs[0].distance_to(ordered[2]))
 
 if __name__ == '__main__':
     unittest.main()
