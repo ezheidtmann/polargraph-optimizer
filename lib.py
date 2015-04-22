@@ -55,23 +55,42 @@ class Glyph():
         to move betwen points is proportional to the greatest distance each
         servo has to move.
         """
-        return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
+        # Optimized equivalent to:
+        #
+        #return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
+        #
 
-    def distance_to_if_self_reversed(self, other):
-        return max(abs(other.start[0] - self.start[0]), abs(other.start[1] - self.start[1]))
+        zeros = other.start[0] - self.end[0]
+        ones = other.start[1] - self.end[1]
+        if zeros < 0:
+            if ones < 0:
+                if zeros < ones:
+                    return -zeros
+                return -ones
+            if -zeros < ones:
+                return ones
+            return -zeros
+
+        if zeros < ones:
+            return ones
+        return zeros
 
     def distance_to_if_other_reversed(self, other):
-        #dist_else = self.distance_to(other)
-        dist_if = max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
-        return dist_if
-        if dist_else == dist_if:
-            print("normal: %9d reversed: %9d" % (dist_else, dist_if), file=sys.stderr)
-            print("self", file=sys.stderr)
-            print("  %5d, %5d start" % self.start,  file=sys.stderr)
-            print("  %5d, %5d end"   % self.end,    file=sys.stderr)
-            print("other", file=sys.stderr)
-            print("  %5d, %5d start" % other.start, file=sys.stderr)
-            print("  %5d, %5d end"   % other.end,   file=sys.stderr)
+        #return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
+        zeros = other.end[0] - self.end[0]
+        ones = other.end[1] - self.end[1]
+        if zeros < 0:
+            if ones < 0:
+                if zeros < ones:
+                    return -zeros
+                return -ones
+            if -zeros < ones:
+                return ones
+            return -zeros
+
+        if zeros < ones:
+            return ones
+        return zeros
 
     def _reversed_instructions(self):
         """
@@ -175,12 +194,13 @@ def reorder_greedy(gs, index=0):
     gs = list(gs)
     ordered = [gs.pop(index)]
     prev = ordered[0]
-    while len(gs) > 0:
-        def dist_reverse_iterator(gs):
-            for g in gs:
-                yield (prev.distance_to(g), False, g)
-                yield (prev.distance_to_if_other_reversed(g), True, g)
 
+    def dist_reverse_iterator(gs):
+        for g in gs:
+            yield (prev.distance_to(g), False, g)
+            yield (prev.distance_to_if_other_reversed(g), True, g)
+
+    while len(gs) > 0:
         (dist, reverse, nearest) = min(dist_reverse_iterator(gs),
                                        key=itemgetter(0, 1))
         gs.remove(nearest)
