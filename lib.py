@@ -214,6 +214,59 @@ def reorder_greedy(gs, index=0):
 
     return ordered
 
+def prune_zero_distance_penups(instructions):
+    instructions = iter(instructions)
+    try:
+        prev = next(instructions)
+    except StopIteration:
+        raise ValueError("instructions empty")
+    # The first instruction should always be a penup, so we send it straight
+    # through.
+    yield prev
+
+    try:
+        while True:
+            current = next(instructions)
+            if current.typename == 'penup':
+                last_down = prev
+                penup = current
+
+                # Get all moves while the pen is up. There should only ever be
+                # one, but you never know these days. :-)
+                moves = []
+                try:
+                    while True:
+                        penup_move = next(instructions)
+                        if penup_move.typename == 'pendown':
+                            pendown = penup_move
+                            break
+                        else:
+                            moves.append(penup_move)
+                except StopIteration:
+                    # If we reach the end of the instructions while looking for
+                    # a pendown, raise the pen and call it good.
+                    yield penup
+                    raise StopIteration
+
+                if moves[-1].coords == last_down.coords:
+                    # The penup move(s) didn't go anywhere, so we remove them
+                    # from the list of instructions and continue to the next
+                    # instruction.
+                    continue
+                else:
+                    # The penup move(s) DID actually move, so we keep them.
+                    yield penup
+                    for move in moves:
+                        yield move
+                    yield pendown
+            else:
+                yield current
+            prev = current
+
+    except StopIteration:
+        pass
+
+
 def dedupe(gs):
     "Use Glyph.__hash__() to dedupe the list of glyphs"
     seen = set()
@@ -229,3 +282,10 @@ def print_glyphs(gs):
     for g in gs:
         for i in g.ordered_instructions():
             print(i.line)
+
+def iter_instructions(gs):
+    # be sure to start with a penup
+    yield Instruction('C14,END')
+    for g in gs:
+        for i in g.ordered_instructions():
+            yield i

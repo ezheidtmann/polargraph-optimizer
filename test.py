@@ -205,5 +205,66 @@ class TestLib(unittest.TestCase):
         self.assertEqual(ordered[0], inputs[0])
         self.assertLessEqual(ordered[0].distance_to(ordered[1]), inputs[0].distance_to(ordered[2]))
 
+    def test_pruned_instructions(self):
+        glyphs = [
+            self.makeGlyphFromText("""
+                C17,5841,3622,2,END
+                C13,END
+                C17,5838,3619,2,END
+                C14,END
+            """),
+            self.makeGlyphFromText("""
+                C17,5838,3619,2,END
+                C13,END
+                C17,5782,3576,2,END
+                C14,END
+            """),
+        ]
+        instructions = iter_instructions(glyphs)
+        pruned = prune_zero_distance_penups(instructions)
+        lines = '\n'.join([i.line for i in pruned])
+        self.assertEqual(lines,
+            "C14,END\n"
+            "C17,5841,3622,2,END\n"
+            "C13,END\n"
+            "C17,5838,3619,2,END\n"
+            "C17,5782,3576,2,END\n"
+            "C14,END")
+
+    def test_three_continuing_glyphs(self):
+        glyphs = [
+            self.makeGlyphFromText("""
+                C17,5841,3622,2,END
+                C13,END
+                C17,5838,3619,2,END
+                C14,END
+            """),
+            self.makeGlyphFromText("""
+                C17,5838,3619,2,END
+                C13,END
+                C17,5782,3576,2,END
+                C14,END
+            """),
+            self.makeGlyphFromText("""
+                C17,5782,3576,2,END
+                C13,END
+                C17,5700,3600,2,END
+                C14,END
+            """),
+        ]
+        instructions = iter_instructions(glyphs)
+        pruned = prune_zero_distance_penups(instructions)
+        lines = '\n'.join([i.line for i in pruned])
+        self.assertEqual(lines,
+            "C14,END\n"
+            "C17,5841,3622,2,END\n"
+            "C13,END\n"
+            "C17,5838,3619,2,END\n"
+            "C17,5782,3576,2,END\n"
+            "C17,5700,3600,2,END\n"
+            "C14,END")
+
+
+
 if __name__ == '__main__':
     unittest.main()

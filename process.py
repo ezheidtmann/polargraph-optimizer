@@ -39,15 +39,22 @@ sorted_g = sorted(glyphs,
 print("Sorted penup distance:  %9d" % total_penup_travel(sorted_g), file=sys.stderr)
 print("Sorted total distance:  %9d" % total_travel(sorted_g), file=sys.stderr)
 
-# Try a few starting points with the greedy sort, just to make sure we don't
-# happen to start somewhere crazy.
-for i in range(0, len(glyphs), int(len(glyphs) / 15)):
-    greedy = reorder_greedy(glyphs, index=i)
-    print("Greedy penup (i=%d)      %9d" % (i, total_penup_travel(greedy)), file=sys.stderr)
-    print("Greedy total (i=%d)      %9d" % (i, total_travel(greedy)), file=sys.stderr)
-    print_glyphs(greedy)
-    import sys
-    sys.exit()
+i = 0
+greedy = reorder_greedy(glyphs, index=i)
+print("Greedy penup (i=%1d)      %9d" % (i, total_penup_travel(greedy)), file=sys.stderr)
+print("Greedy total (i=%1d)      %9d" % (i, total_travel(greedy)), file=sys.stderr)
+print_glyphs(greedy)
+import sys; sys.exit()
+
+# Render down from Glyphs -> Instructions
+instructions = list(iter_instructions(greedy))
+print("Total instructions:     %9d" % (len(instructions),), file=sys.stderr)
+# Remove penup / move / pendown sequences that don't actually move anywhere.
+pruned_instructions = list(prune_zero_distance_penups(instructions))
+print("Pruned instructions:    %9d" % (len(pruned_instructions),), file=sys.stderr)
+
+for i in pruned_instructions:
+    print(i.line)
 
 # Next up: try flipping the ordering of individual glyphs in greedy sort
 #
