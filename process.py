@@ -43,8 +43,6 @@ i = 0
 greedy = reorder_greedy(glyphs, index=i)
 print("Greedy penup (i=%1d)      %9d" % (i, total_penup_travel(greedy)), file=sys.stderr)
 print("Greedy total (i=%1d)      %9d" % (i, total_travel(greedy)), file=sys.stderr)
-print_glyphs(greedy)
-import sys; sys.exit()
 
 # Render down from Glyphs -> Instructions
 instructions = list(iter_instructions(greedy))
