@@ -45,9 +45,6 @@ class Glyph():
 
         self.instructions = instructions
 
-    def _distance_to_slow(self, other):
-        return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
-
     def distance_to(self, other):
         """
         Compute distance between two glyphs (other.start - self.end)
@@ -58,42 +55,10 @@ class Glyph():
         to move betwen points is proportional to the greatest distance each
         servo has to move.
         """
-        # Optimized equivalent to:
-        #
-        #
+        return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
 
-        zeros = other.start[0] - self.end[0]
-        ones = other.start[1] - self.end[1]
-        if zeros < 0:
-            if ones < 0:
-                if zeros < ones:
-                    return -zeros
-                return -ones
-            if -zeros < ones:
-                return ones
-            return -zeros
-
-        if zeros < ones:
-            return ones
-        return zeros
-
-    def _distance_to_if_other_reversed_slow(self, other):
-        return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
     def distance_to_if_other_reversed(self, other):
-        zeros = other.end[0] - self.end[0]
-        ones = other.end[1] - self.end[1]
-        if zeros < 0:
-            if ones < 0:
-                if zeros < ones:
-                    return -zeros
-                return -ones
-            if -zeros < ones:
-                return ones
-            return -zeros
-
-        if zeros < ones:
-            return ones
-        return zeros
+        return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
 
     def _reversed_instructions(self):
         """
