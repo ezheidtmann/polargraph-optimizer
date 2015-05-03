@@ -45,6 +45,9 @@ class Glyph():
 
         self.instructions = instructions
 
+    def _distance_to_slow(self, other):
+        return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
+
     def distance_to(self, other):
         """
         Compute distance between two glyphs (other.start - self.end)
@@ -57,7 +60,6 @@ class Glyph():
         """
         # Optimized equivalent to:
         #
-        #return max(abs(other.start[0] - self.end[0]), abs(other.start[1] - self.end[1]))
         #
 
         zeros = other.start[0] - self.end[0]
@@ -75,8 +77,9 @@ class Glyph():
             return ones
         return zeros
 
+    def _distance_to_if_other_reversed_slow(self, other):
+        return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
     def distance_to_if_other_reversed(self, other):
-        #return max(abs(other.end[0] - self.end[0]), abs(other.end[1] - self.end[1]))
         zeros = other.end[0] - self.end[0]
         ones = other.end[1] - self.end[1]
         if zeros < 0:

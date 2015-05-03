@@ -199,8 +199,8 @@ class TestLib(unittest.TestCase):
 
         ordered = reorder_greedy(inputs)
 
-        print('inputs : {}'.format([g1.distance_to(g2) for (g1, g2) in pairwise(inputs)]))
-        print('ordered: {}'.format([g1.distance_to(g2) for (g1, g2) in pairwise(ordered)]))
+        #print('inputs : {}'.format([g1.distance_to(g2) for (g1, g2) in pairwise(inputs)]))
+        #print('ordered: {}'.format([g1.distance_to(g2) for (g1, g2) in pairwise(ordered)]))
 
         self.assertEqual(ordered[0], inputs[0])
         self.assertLessEqual(ordered[0].distance_to(ordered[1]), inputs[0].distance_to(ordered[2]))
@@ -264,6 +264,51 @@ class TestLib(unittest.TestCase):
             "C17,5700,3600,2,END\n"
             "C14,END")
 
+    def test_distance_to(self):
+        one = self.makeGlyphFromText("""
+                C17,5782,3576,2,END
+                C13,END
+                C17,5700,3600,2,END
+                C14,END
+            """)
+            
+        two = self.makeGlyphFromText("""
+                C17,5838,3619,2,END
+                C13,END
+                C17,5782,3576,2,END
+                C14,END
+            """)
+
+        three = self.makeGlyphFromText("""
+                C17,5701,3619,2,END
+                C13,END
+                C17,5782,3576,2,END
+                C14,END
+            """)
+
+        # one -> two == max(5838-5700, 3619-3600)
+        # one -> two_reversed == max(...
+
+        self.assertEqual(one.distance_to(two), one._distance_to_slow(two))
+        self.assertEqual(two.distance_to(one), two._distance_to_slow(one))
+        self.assertEqual(one.distance_to_if_other_reversed(two),
+            one._distance_to_if_other_reversed_slow(two))
+        self.assertEqual(two.distance_to_if_other_reversed(one),
+            two._distance_to_if_other_reversed_slow(one))
+
+        self.assertEqual(three.distance_to(two), three._distance_to_slow(two))
+        self.assertEqual(two.distance_to(three), two._distance_to_slow(three))
+        self.assertEqual(three.distance_to_if_other_reversed(two),
+            three._distance_to_if_other_reversed_slow(two))
+        self.assertEqual(two.distance_to_if_other_reversed(three),
+            two._distance_to_if_other_reversed_slow(three))
+
+        self.assertEqual(one.distance_to(three), one._distance_to_slow(three))
+        self.assertEqual(three.distance_to(one), three._distance_to_slow(one))
+        self.assertEqual(one.distance_to_if_other_reversed(three),
+            one._distance_to_if_other_reversed_slow(three))
+        self.assertEqual(three.distance_to_if_other_reversed(one),
+            three._distance_to_if_other_reversed_slow(one))
 
 
 if __name__ == '__main__':
